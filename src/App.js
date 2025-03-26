@@ -6,7 +6,6 @@ import SortPopup from './components/SortPopup';
 import FilterPopup from './components/FilterPopup';
 import sortIcon from './sort.svg';
 import filterIcon from './filter.svg';
-import closeIcon from './close.svg';
 
 const App = () => {
   const [peopleData, setPeopleData] = useState([]);
@@ -194,7 +193,11 @@ const App = () => {
     <div className="container">
       <h1>People List (React)</h1>
       <div className="table-controls">
-        <button id="sortBtn" className="sort-btn" onClick={() => setShowSortPopup(true)}>
+        <button
+          id="sortBtn"
+          className={`sort-btn ${sortCriteria.length > 0 ? 'sorted' : ''}`}
+          onClick={() => setShowSortPopup(true)}
+        >
           <span
             className="sort-image"
             style={{ display: sortCriteria.length > 0 ? 'none' : 'inline' }}
@@ -213,10 +216,14 @@ const App = () => {
               resetSort();
             }}
           >
-            <img alt="image" src={closeIcon} />
+            ×
           </span>
         </button>
-        <button id="filterBtn" className="filter-btn" onClick={() => setShowFilterPopup(true)}>
+        <button
+          id="filterBtn"
+          className={`filter-btn ${filterCriteria.length > 0 ? 'filtered' : ''}`}
+          onClick={() => setShowFilterPopup(true)}
+        >
           <span
             className="filter-image"
             style={{ display: filterCriteria.length > 0 ? 'none' : 'inline' }}

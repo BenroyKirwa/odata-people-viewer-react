@@ -1,19 +1,39 @@
 // src/components/SortPopup.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import sortIcon from '../sort.svg';
 import cancelIcon from '../cancel.svg';
 
 const SortPopup = ({ sortCriteria, setSortCriteria, onClose, onApply }) => {
+  // Local state to manage temporary sort criteria in the popup
+  const [tempSortCriteria, setTempSortCriteria] = useState([]);
+
+  // Initialize tempSortCriteria with the current sortCriteria when the popup opens
+  useEffect(() => {
+    setTempSortCriteria(sortCriteria);
+  }, [sortCriteria]);
+
   const addSortCriteria = () => {
-    setSortCriteria([...sortCriteria, { id: Date.now(), column: 'UserName', order: 'asc' }]);
+    setTempSortCriteria([...tempSortCriteria, { id: Date.now(), column: 'UserName', order: 'asc' }]);
   };
 
   const deleteSortCriteria = (id) => {
-    setSortCriteria(sortCriteria.filter((c) => c.id !== id));
+    setTempSortCriteria(tempSortCriteria.filter((c) => c.id !== id));
   };
 
   const updateSortCriterion = (id, field, value) => {
-    setSortCriteria(sortCriteria.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
+    setTempSortCriteria(
+      tempSortCriteria.map((c) => (c.id === id ? { ...c, [field]: value } : c))
+    );
+  };
+
+  const handleApply = () => {
+    setSortCriteria(tempSortCriteria); // Update parent state only on "Submit"
+    onApply();
+  };
+
+  const handleReset = () => {
+    setTempSortCriteria([]); // Reset temporary criteria
+    setSortCriteria([]); // Reset parent criteria
   };
 
   return (
@@ -29,10 +49,10 @@ const SortPopup = ({ sortCriteria, setSortCriteria, onClose, onApply }) => {
           </div>
           <div className="sort-body">
             <div id="sortCriteriaList">
-              {sortCriteria.length === 0 ? (
+              {tempSortCriteria.length === 0 ? (
                 <button onClick={addSortCriteria}>Add Sort</button>
               ) : (
-                sortCriteria.map((criterion) => (
+                tempSortCriteria.map((criterion) => (
                   <div key={criterion.id} className="sort-criterion-list" data-id={criterion.id}>
                     <div>
                       <p>
@@ -70,14 +90,14 @@ const SortPopup = ({ sortCriteria, setSortCriteria, onClose, onApply }) => {
                   </div>
                 ))
               )}
-              {sortCriteria.length > 0 && <button onClick={addSortCriteria}>Add Sort</button>}
+              {tempSortCriteria.length > 0 && <button onClick={addSortCriteria}>Add Sort</button>}
             </div>
           </div>
           <div className="sort-popup-footer">
-            <button id="resetBtn" onClick={() => setSortCriteria([])}>
+            <button id="resetBtn" onClick={handleReset}>
               Reset Sorting
             </button>
-            <button id="submitBtn" onClick={onApply}>
+            <button id="submitBtn" onClick={handleApply}>
               Submit
             </button>
           </div>

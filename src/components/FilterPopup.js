@@ -1,35 +1,55 @@
 // src/components/FilterPopup.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import filterIcon from '../filter.svg';
 import cancelIcon from '../cancel.svg';
 
 const FilterPopup = ({ filterCriteria, setFilterCriteria, columnTypes, relationsByType, onClose, onApply }) => {
+  // Local state to manage temporary filter criteria in the popup
+  const [tempFilterCriteria, setTempFilterCriteria] = useState([]);
+
+  // Initialize tempFilterCriteria with the current filterCriteria when the popup opens
+  useEffect(() => {
+    setTempFilterCriteria(filterCriteria);
+  }, [filterCriteria]);
+
   const addFilterCriteria = () => {
     const defaultColumn = 'UserName';
     const defaultType = columnTypes[defaultColumn];
     const defaultRelations = relationsByType[defaultType];
-    setFilterCriteria([
-      ...filterCriteria,
+    setTempFilterCriteria([
+      ...tempFilterCriteria,
       { id: Date.now(), column: defaultColumn, relation: defaultRelations[0].value, value: '' },
     ]);
   };
 
   const deleteFilterCriteria = (id) => {
-    setFilterCriteria(filterCriteria.filter((c) => c.id !== id));
+    setTempFilterCriteria(tempFilterCriteria.filter((c) => c.id !== id));
   };
 
   const updateFilterCriterion = (id, field, value) => {
     if (field === 'column') {
       const newType = columnTypes[value] || 'string';
       const newRelations = relationsByType[newType];
-      setFilterCriteria(
-        filterCriteria.map((c) =>
+      setTempFilterCriteria(
+        tempFilterCriteria.map((c) =>
           c.id === id ? { ...c, column: value, relation: newRelations[0].value, value: '' } : c
         )
       );
     } else {
-      setFilterCriteria(filterCriteria.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
+      setTempFilterCriteria(
+        tempFilterCriteria.map((c) => (c.id === id ? { ...c, [field]: value } : c))
+      );
     }
+  };
+
+  const handleApply = () => {
+    setFilterCriteria(tempFilterCriteria); // Update parent state only on "Submit"
+    onApply();
+  };
+
+  const handleReset = () => {
+    setTempFilterCriteria([]); // Reset temporary criteria
+    setFilterCriteria([]); // Reset parent criteria
   };
 
   return (
@@ -45,10 +65,10 @@ const FilterPopup = ({ filterCriteria, setFilterCriteria, columnTypes, relations
           </div>
           <div className="filter-popup-body">
             <div id="filterCriteriaList">
-              {filterCriteria.length === 0 ? (
+              {tempFilterCriteria.length === 0 ? (
                 <button onClick={addFilterCriteria}>Add Filter</button>
               ) : (
-                filterCriteria.map((criterion) => {
+                tempFilterCriteria.map((criterion) => {
                   const columnType = columnTypes[criterion.column];
                   const relations = relationsByType[columnType];
                   return (
@@ -105,14 +125,14 @@ const FilterPopup = ({ filterCriteria, setFilterCriteria, columnTypes, relations
                   );
                 })
               )}
-              {filterCriteria.length > 0 && <button onClick={addFilterCriteria}>Add Filter</button>}
+              {tempFilterCriteria.length > 0 && <button onClick={addFilterCriteria}>Add Filter</button>}
             </div>
           </div>
           <div className="filter-popup-footer">
-            <button id="resetBtn" onClick={() => setFilterCriteria([])}>
+            <button id="resetBtn" onClick={handleReset}>
               Reset Filter
             </button>
-            <button id="submitBtn" onClick={onApply}>
+            <button id="submitBtn" onClick={handleApply}>
               Submit
             </button>
           </div>
