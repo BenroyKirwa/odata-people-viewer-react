@@ -22,14 +22,13 @@ A web application that fetches people data from the OData API (`http://services.
    git clone https://github.com/your-username/odata-people-viewer-react.git
    cd odata-people-viewer-react
 
-2. Install http-server (if not already installed):
-   ```bash
-   npm install -g http-server
+3. Install dependencies:
+    ```bash
+    npm install
 
-
-3. Start the server:
-   ```bash
-   http-server
+4. Start the development server:
+    ```bash
+    npm start
 
 
 4. Request temporary access to https://cors-anywhere.herokuapp.com/ to bypass CORS.
