@@ -6,6 +6,7 @@ import SortPopup from './components/SortPopup';
 import FilterPopup from './components/FilterPopup';
 import sortIcon from './sort.svg';
 import filterIcon from './filter.svg';
+import closeIcon from './close.svg';
 
 const App = () => {
   const [peopleData, setPeopleData] = useState([]);
@@ -160,7 +161,6 @@ const App = () => {
       loader.classList.remove('loader-hidden');
     }
     setSortCriteria([]);
-    setShowSortPopup(true);
     fetchPeopleData();
   };
 
@@ -172,7 +172,6 @@ const App = () => {
       loader.classList.remove('loader-hidden');
     }
     setFilterCriteria([]);
-    setShowFilterPopup(true);
     fetchPeopleData();
   };
 
@@ -216,7 +215,7 @@ const App = () => {
               resetSort();
             }}
           >
-            ×
+            <img src={closeIcon} alt='image'/>
           </span>
         </button>
         <button
@@ -242,7 +241,7 @@ const App = () => {
               resetFilter();
             }}
           >
-            ×
+            <img src={closeIcon} alt='image'/>
           </span>
         </button>
         <button id="refreshBtn" className="refresh-btn" onClick={refreshData}>
