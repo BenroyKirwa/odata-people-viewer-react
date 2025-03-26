@@ -85,7 +85,7 @@ const App = () => {
     }
 
     let newPeopleData = [];
-    const baseUrl = 'https://cors-anywhere.herokuapp.com/http://services.odata.org/TripPinRESTierService/People';
+    const baseUrl = 'https://corsproxy.io/?http://services.odata.org/TripPinRESTierService/People';
     const pageSize = 10;
     let skip = 0;
     let hasMore = true;
