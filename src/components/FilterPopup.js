@@ -4,10 +4,8 @@ import filterIcon from '../filter.svg';
 import cancelIcon from '../cancel.svg';
 
 const FilterPopup = ({ filterCriteria, setFilterCriteria, columnTypes, relationsByType, onClose, onApply }) => {
-  // Local state to manage temporary filter criteria in the popup
   const [tempFilterCriteria, setTempFilterCriteria] = useState([]);
 
-  // Initialize tempFilterCriteria with the current filterCriteria when the popup opens
   useEffect(() => {
     setTempFilterCriteria(filterCriteria);
   }, [filterCriteria]);
@@ -43,13 +41,13 @@ const FilterPopup = ({ filterCriteria, setFilterCriteria, columnTypes, relations
   };
 
   const handleApply = () => {
-    setFilterCriteria(tempFilterCriteria); // Update parent state only on "Submit"
-    onApply();
+    setFilterCriteria(tempFilterCriteria);
+    onApply(tempFilterCriteria);
   };
 
   const handleReset = () => {
-    setTempFilterCriteria([]); // Reset temporary criteria
-    setFilterCriteria([]); // Reset parent criteria
+    setTempFilterCriteria([]);
+    setFilterCriteria([]);
   };
 
   return (
@@ -58,10 +56,10 @@ const FilterPopup = ({ filterCriteria, setFilterCriteria, columnTypes, relations
         <div className="filter-popup">
           <div className="filter-popup-header">
             <div className="filter-header-start">
-              <img src={filterIcon} alt="image" width="20" height="20" />
+              <img src={filterIcon} alt="filter icon" width="20" height="20" />
               <h2>Filter People</h2>
             </div>
-            <img className="close" onClick={onClose} src={cancelIcon} alt="image" width="20" height="20" />
+            <img className="close" onClick={onClose} src={cancelIcon} alt="close icon" width="20" height="20" />
           </div>
           <div className="filter-popup-body">
             <div id="filterCriteriaList">

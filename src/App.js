@@ -6,13 +6,14 @@ import SortPopup from './components/SortPopup';
 import FilterPopup from './components/FilterPopup';
 import sortIcon from './sort.svg';
 import filterIcon from './filter.svg';
-import closeIcon from './close.svg';
+import closeIcon from './close.svg'
 
 const App = () => {
   const [peopleData, setPeopleData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortCriteria, setSortCriteria] = useState([]);
   const [filterCriteria, setFilterCriteria] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
   const [showSortPopup, setShowSortPopup] = useState(false);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -42,6 +43,7 @@ const App = () => {
   };
 
   // Read query parameters from the URL on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sortField = params.get('sortField') || '';
@@ -57,27 +59,25 @@ const App = () => {
       setFilterCriteria([{ id: Date.now(), column: filterField, relation, value: filterValue }]);
     }
 
-    fetchPeopleData();
+    fetchPeopleData(sortCriteria, filterCriteria);
   }, []);
 
-  // Update the browser's URL with the first sorting and filtering parameters
-  const updateQueryParams = () => {
+  const updateQueryParams = (newSortCriteria, newFilterCriteria) => {
     const params = new URLSearchParams();
-    if (sortCriteria.length > 0) {
-      params.set('sortField', sortCriteria[0].column);
-      params.set('sortOrder', sortCriteria[0].order);
+    if (newSortCriteria.length > 0) {
+      params.set('sortField', newSortCriteria[0].column);
+      params.set('sortOrder', newSortCriteria[0].order);
     }
-    if (filterCriteria.length > 0) {
-      params.set('filterField', filterCriteria[0].column);
-      params.set('filterValue', filterCriteria[0].value);
+    if (newFilterCriteria.length > 0) {
+      params.set('filterField', newFilterCriteria[0].column);
+      params.set('filterValue', newFilterCriteria[0].value);
     }
 
     const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
     window.history.pushState({}, '', newUrl);
   };
 
-  // Fetch people data with sorting and filtering
-  const fetchPeopleData = async () => {
+  const fetchPeopleData = async (sortCriteriaToUse, filterCriteriaToUse) => {
     setIsLoading(true);
     const loader = document.querySelector('.loader');
     if (loader) {
@@ -92,13 +92,13 @@ const App = () => {
 
     let queryParams = [];
 
-    if (sortCriteria.length > 0) {
-      const orderBy = sortCriteria.map((c) => `${c.column} ${c.order}`).join(',');
+    if (sortCriteriaToUse.length > 0) {
+      const orderBy = sortCriteriaToUse.map((c) => `${c.column} ${c.order}`).join(',');
       queryParams.push(`$orderby=${orderBy}`);
     }
 
-    if (filterCriteria.length > 0) {
-      const filters = filterCriteria.map((criterion) => {
+    if (filterCriteriaToUse.length > 0) {
+      const filters = filterCriteriaToUse.map((criterion) => {
         const { column, relation, value } = criterion;
         if (!value) return null;
 
@@ -153,7 +153,6 @@ const App = () => {
     }
   };
 
-  // Reset sorting
   const resetSort = () => {
     setIsLoading(true);
     const loader = document.querySelector('.loader');
@@ -161,10 +160,10 @@ const App = () => {
       loader.classList.remove('loader-hidden');
     }
     setSortCriteria([]);
-    fetchPeopleData();
+    updateQueryParams([], filterCriteria)
+    fetchPeopleData([], filterCriteria);
   };
 
-  // Reset filtering
   const resetFilter = () => {
     setIsLoading(true);
     const loader = document.querySelector('.loader');
@@ -172,10 +171,10 @@ const App = () => {
       loader.classList.remove('loader-hidden');
     }
     setFilterCriteria([]);
-    fetchPeopleData();
+    updateQueryParams(sortCriteria, [])
+    fetchPeopleData(sortCriteria, []);
   };
 
-  // Refresh data
   const refreshData = () => {
     setIsLoading(true);
     const loader = document.querySelector('.loader');
@@ -184,8 +183,8 @@ const App = () => {
     }
     setSortCriteria([]);
     setFilterCriteria([]);
-    updateQueryParams();
-    fetchPeopleData();
+    updateQueryParams([], []);
+    fetchPeopleData([], []);
   };
 
   return (
@@ -201,7 +200,7 @@ const App = () => {
             className="sort-image"
             style={{ display: sortCriteria.length > 0 ? 'none' : 'inline' }}
           >
-            <img alt="image" src={sortIcon} height="15" width="15" />
+            <img alt="sort icon" src={sortIcon} height="15" width="15" />
           </span>
           <span className="sort-label">
             <b>{sortCriteria.length > 0 ? `${sortCriteria.length} Sort` : 'Sort'}</b>
@@ -215,7 +214,7 @@ const App = () => {
               resetSort();
             }}
           >
-            <img src={closeIcon} alt='image'/>
+            <img src={closeIcon}/>
           </span>
         </button>
         <button
@@ -227,7 +226,7 @@ const App = () => {
             className="filter-image"
             style={{ display: filterCriteria.length > 0 ? 'none' : 'inline' }}
           >
-            <img alt="image" src={filterIcon} height="15" width="15" />
+            <img alt="filter icon" src={filterIcon} height="15" width="15" />
           </span>
           <span className="filter-label">
             <b>{filterCriteria.length > 0 ? `${filterCriteria.length} Filter` : 'Filter'}</b>
@@ -241,7 +240,7 @@ const App = () => {
               resetFilter();
             }}
           >
-            <img src={closeIcon} alt='image'/>
+            <img src={closeIcon}/>
           </span>
         </button>
         <button id="refreshBtn" className="refresh-btn" onClick={refreshData}>
@@ -259,15 +258,15 @@ const App = () => {
           sortCriteria={sortCriteria}
           setSortCriteria={setSortCriteria}
           onClose={() => setShowSortPopup(false)}
-          onApply={() => {
+          onApply={(newSortCriteria) => {
             setIsLoading(true);
             const loader = document.querySelector('.loader');
             if (loader) {
               loader.classList.remove('loader-hidden');
             }
             setShowSortPopup(false);
-            updateQueryParams();
-            fetchPeopleData();
+            updateQueryParams(newSortCriteria, filterCriteria);
+            fetchPeopleData(newSortCriteria, filterCriteria);
           }}
         />
       )}
@@ -278,15 +277,15 @@ const App = () => {
           columnTypes={columnTypes}
           relationsByType={relationsByType}
           onClose={() => setShowFilterPopup(false)}
-          onApply={() => {
+          onApply={(newFilterCriteria) => {
             setIsLoading(true);
             const loader = document.querySelector('.loader');
             if (loader) {
               loader.classList.remove('loader-hidden');
             }
             setShowFilterPopup(false);
-            updateQueryParams();
-            fetchPeopleData();
+            updateQueryParams(sortCriteria, newFilterCriteria);
+            fetchPeopleData(sortCriteria, newFilterCriteria);
           }}
         />
       )}

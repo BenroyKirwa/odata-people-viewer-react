@@ -4,10 +4,8 @@ import sortIcon from '../sort.svg';
 import cancelIcon from '../cancel.svg';
 
 const SortPopup = ({ sortCriteria, setSortCriteria, onClose, onApply }) => {
-  // Local state to manage temporary sort criteria in the popup
   const [tempSortCriteria, setTempSortCriteria] = useState([]);
 
-  // Initialize tempSortCriteria with the current sortCriteria when the popup opens
   useEffect(() => {
     setTempSortCriteria(sortCriteria);
   }, [sortCriteria]);
@@ -27,13 +25,13 @@ const SortPopup = ({ sortCriteria, setSortCriteria, onClose, onApply }) => {
   };
 
   const handleApply = () => {
-    setSortCriteria(tempSortCriteria); // Update parent state only on "Submit"
-    onApply();
+    setSortCriteria(tempSortCriteria);
+    onApply(tempSortCriteria);
   };
 
   const handleReset = () => {
-    setTempSortCriteria([]); // Reset temporary criteria
-    setSortCriteria([]); // Reset parent criteria
+    setTempSortCriteria([]);
+    setSortCriteria([]);
   };
 
   return (
@@ -42,10 +40,10 @@ const SortPopup = ({ sortCriteria, setSortCriteria, onClose, onApply }) => {
         <div className="sort-popup">
           <div className="sort-popup-header">
             <div className="sort-header-start">
-              <img src={sortIcon} alt="image" width="20" height="20" />
+              <img src={sortIcon} alt="sort icon" width="20" height="20" />
               <h2>Sort People</h2>
             </div>
-            <img className="close" onClick={onClose} src={cancelIcon} alt="image" width="20" height="20" />
+            <img className="close" onClick={onClose} src={cancelIcon} alt="close icon" width="20" height="20" />
           </div>
           <div className="sort-body">
             <div id="sortCriteriaList">
