@@ -4,7 +4,6 @@ import DynamicTable from './components/DynamicTable';
 
 const App = () => {
   const [peopleData, setPeopleData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const columns = [
     { key: 'UserName', label: 'User Name' },
@@ -15,108 +14,39 @@ const App = () => {
     { key: 'Age', label: 'Age', formatter: (value) => value || 'N/A' },
   ];
 
-  const columnTypes = {
-    UserName: 'string',
-    FirstName: 'string',
-    LastName: 'string',
-    MiddleName: 'string',
-    Gender: 'string',
-    Age: 'number',
-  };
-
-  const relationsByType = {
-    string: [
-      { value: 'eq', label: 'Equals' },
-      { value: 'contains', label: 'Contains' },
-      { value: 'startswith', label: 'Starts With' },
-    ],
-    number: [
-      { value: 'eq', label: 'Equals' },
-      { value: 'gt', label: 'Greater Than' },
-      { value: 'lt', label: 'Less Than' },
-    ],
-  };
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sortField = params.get('sortField') || '';
-    const sortOrder = params.get('sortOrder') || 'asc';
-    const filterField = params.get('filterField') || '';
-    const filterValue = params.get('filterValue') || '';
-
-    let initialSortCriteria = [];
-    let initialFilterCriteria = [];
-
-    if (sortField && sortOrder) {
-      initialSortCriteria = [{ id: Date.now(), column: sortField, order: sortOrder }];
-    }
-    if (filterField && filterValue) {
-      const relation = columnTypes[filterField] === 'string' ? 'eq' : 'eq';
-      initialFilterCriteria = [{ id: Date.now(), column: filterField, relation, value: filterValue }];
-    }
-
-    fetchPeopleData(initialSortCriteria, initialFilterCriteria);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchPeopleData([], []);
   }, []);
 
-  const updateQueryParams = (newSortCriteria, newFilterCriteria) => {
-    const params = new URLSearchParams();
-    if (newSortCriteria.length > 0) {
-      params.set('sortField', newSortCriteria[0].column);
-      params.set('sortOrder', newSortCriteria[0].order);
-    }
-    if (newFilterCriteria.length > 0) {
-      params.set('filterField', newFilterCriteria[0].column);
-      params.set('filterValue', newFilterCriteria[0].value);
-    }
-
-    const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-    window.history.pushState({}, '', newUrl);
-  };
 
   const fetchPeopleData = async (sortCriteria, filterCriteria) => {
-    setIsLoading(true);
-    const loader = document.querySelector('.loader');
-    if (loader) {
-      loader.classList.remove('loader-hidden');
-    }
-
     let newPeopleData = [];
-    const baseUrl = 'https://corsproxy.io/?http://services.odata.org/TripPinRESTierService/People';
+    const baseUrl = 'http://172.20.94.31:8080/http://services.odata.org/TripPinRESTierService/People';
     const pageSize = 10;
     let skip = 0;
     let hasMore = true;
 
-    let queryParams = [];
-
-    if (sortCriteria.length > 0) {
-      const orderBy = sortCriteria.map((c) => `${c.column} ${c.order}`).join(',');
-      queryParams.push(`$orderby=${orderBy}`);
-    }
-
-    if (filterCriteria.length > 0) {
-      const filters = filterCriteria.map((criterion) => {
-        const { column, relation, value } = criterion;
+    // Generate OData query using DynamicTable’s logic
+    const sortQuery = sortCriteria.map((c) => `${c.column} ${c.order}`).join(',');
+    const filterQuery = filterCriteria
+      .map((c) => {
+        const { column, relation, value } = c;
         if (!value) return null;
-
-        if (columnTypes[column] === 'string') {
-          if (relation === 'eq') {
-            return `${column} eq '${value}'`;
-          } else if (relation === 'contains') {
-            return `contains(${column}, '${value}')`;
-          } else if (relation === 'startswith') {
-            return `startswith(${column}, '${value}')`;
-          }
-        } else if (columnTypes[column] === 'number') {
-          return `${column} ${relation} ${value}`;
-        }
+        // Simplified OData filter syntax based on DynamicTable relations
+        if (relation === 'eq') return `${column} eq '${value}'`;
+        if (relation === 'contains') return `contains(${column}, '${value}')`;
+        if (relation === 'startswith') return `startswith(${column}, '${value}')`;
+        if (relation === 'gt') return `${column} gt ${value}`;
+        if (relation === 'lt') return `${column} lt ${value}`;
         return null;
-      }).filter((f) => f !== null);
+      })
+      .filter((f) => f !== null)
+      .join(' and ');
 
-      if (filters.length > 0) {
-        queryParams.push(`$filter=${filters.join(' and ')}`);
-      }
-    }
+    let queryParams = [];
+    if (sortQuery) queryParams.push(`$orderby=${sortQuery}`);
+    if (filterQuery) queryParams.push(`$filter=${filterQuery}`);
 
     while (hasMore) {
       try {
@@ -124,7 +54,11 @@ const App = () => {
         if (queryParams.length > 0) {
           url += `&${queryParams.join('&')}`;
         }
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: {
+            'x-cors-api-key': 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+          }
+        });
         if (!response.ok) throw new Error(`Response status: ${response.status}`);
         const data = await response.json();
         const batch = data.value || [];
@@ -147,22 +81,53 @@ const App = () => {
     }));
 
     setPeopleData(newPeopleData);
-    setIsLoading(false);
+  };
 
-    if (loader) {
-      loader.classList.add('loader-hidden');
+  const handleQueryChange = async (queryString) => {
+    let odataQuery = '';
+    if (queryString) {
+      const params = new URLSearchParams(queryString.slice(1));
+      const sort = params.get('sort');
+      const filter = params.get('filter');
+      const odataParams = [];
+      if (sort) {
+        const sortParts = sort.split(',').map((s) => {
+          const [field, order] = s.split(':');
+          return `${field} ${order}`;
+        });
+        odataParams.push(`$orderby=${sortParts.join(',')}`);
+      }
+      if (filter) {
+        const filterParts = filter.split(',').map((f) => {
+          const [field, relation, value] = f.split(':');
+          if (!value) return '';
+          if (relation === 'eq') return `${field} eq '${decodeURIComponent(value)}'`;
+          // Add others as confirmed working
+          return '';
+        });
+        odataParams.push(`$filter=${filterParts.join(' and ')}`);
+      }
+      odataQuery = odataParams.length ? `?${odataParams.join('&')}` : '';
     }
+
+    console.log('OData Query:', odataQuery);
+    const response = await fetch(`http://172.20.94.31:8080/http://services.odata.org/TripPinRESTierService/People${odataQuery}`);
+    if (!response.ok) throw new Error(`Response status: ${response.status}`);
+    const newData = await response.json();
+    const newPeopleData = (newData.value || []).map((item, index) => ({
+      ...item,
+      id: `${item.UserName}-${index}`,
+    }));
+    setPeopleData(newPeopleData);
   };
 
   const handleRefresh = () => {
     fetchPeopleData([], []);
-    updateQueryParams([], []);
   };
 
   return (
     <div className="container">
       <h1>People List (React)</h1>
-      {isLoading && <div>Loading...</div>}
       <DynamicTable
         data={peopleData}
         columns={columns}
@@ -171,8 +136,8 @@ const App = () => {
         enableSort={true}
         enableFilter={true}
         itemsPerPage={5}
-        columnTypes={columnTypes}
-        relationsByType={relationsByType}
+        isApiDriven={true}
+        onQueryChange={handleQueryChange}
       />
     </div>
   );
