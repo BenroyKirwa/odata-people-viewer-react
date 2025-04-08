@@ -7,7 +7,6 @@ body {
 }
 
 .container {
-    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -77,6 +76,12 @@ table th {
     padding: 5px 10px;
     border-radius: 3px;
     cursor: pointer;
+}
+
+.pagination button.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
 }
 
 .pagination button:disabled {
@@ -165,15 +170,42 @@ table th {
     margin: 10px;
 }
 .sort-popup-header img.close {
-    margin: 10px; 
+    margin: 10px;
     cursor: pointer;
     width: 20px;
     height: 20px;
 }
 
-.sort-body {
+.sort-popup-body {
     padding: 20px;
     min-height: 300px;
+}
+
+.sort-criterion {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.sort-criterion {
+    flex: none;
+}
+
+.sort-column, .sort-value {
+    padding: 5px;
+}
+
+.trash{
+    margin-top: auto;
+}
+
+select{
+    border: 1px solid #CAC9C9;
+    background: #ffffff;
+    color: #CAC9C9;
+    padding: 5px;
 }
 
 .sort-popup-footer {
@@ -247,7 +279,7 @@ table th {
 
 .sort-btn.sorted {
     padding-right: 35px;
-    padding-bottom: 0;
+    padding-bottom: 5px;
     background-color: #b22222; /* Red when sorted */
     color: white;
 }
@@ -303,7 +335,7 @@ table th {
 
 .filter-btn.filtered {
     padding-right: 35px;
-    padding-bottom: 0;
+    padding-bottom: 5px;
     background-color: #b22222; /* Red when sorted */
     color: white;
 }
@@ -416,4 +448,11 @@ table th {
         transform: rotate(1turn);
     }
 }
+
+button{
+    border-style: none;
+    background: none;
+}
+
+
 

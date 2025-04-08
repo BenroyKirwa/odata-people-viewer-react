@@ -3,6 +3,11 @@ import sortIcon from '../sort.svg';
 import filterIcon from '../filter.svg';
 import cancelIcon from '../cancel.svg';
 import closeIcon from '../close.svg';
+import plusIcon from '../plus.svg';
+import addFilterIcon from '../addfilter.svg';
+import trashIcon from '../trash.svg';
+import filterYellowIcon from '../filter-yellow.svg';
+import sortBlueIcon from '../sort-blue.svg';
 
 const DynamicTable = ({
   data = [],
@@ -79,14 +84,38 @@ const DynamicTable = ({
   }, [isApiDriven, sortCriteria, filterCriteria, columns, enableSort, enableFilter]);
 
   // Process data when data, sort, or filter changes
+  // useEffect(() => {
+  //   const processData = async () => {
+  //     setIsLoading(true);
+  //     try {
+  //       const { query, data: processed } = await applySortAndFilter(data);
+  //       if (isApiDriven) {
+  //         // Only call if query changed
+  //         if ((sortCriteria.length > 0 || filterCriteria.length > 0) && query !== lastQueryRef.current) {
+  //           lastQueryRef.current = query;
+  //           await onQueryChange(query);
+  //         }
+  //         setProcessedData(data);
+  //       } else {
+  //         setProcessedData(processed);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error processing data:', error);
+  //       setProcessedData(data);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   processData();
+  // }, [data, sortCriteria, filterCriteria, isApiDriven, onQueryChange, applySortAndFilter]);
   useEffect(() => {
     const processData = async () => {
       setIsLoading(true);
       try {
         const { query, data: processed } = await applySortAndFilter(data);
         if (isApiDriven) {
-          // Only call if query changed
-          if ((sortCriteria.length > 0 || filterCriteria.length > 0) && query !== lastQueryRef.current) {
+          // Always fetch with current query, even if empty
+          if (query !== lastQueryRef.current) {
             lastQueryRef.current = query;
             await onQueryChange(query);
           }
@@ -296,7 +325,7 @@ const DynamicTable = ({
               setShowSortPopup(true);
             }}
           >
-            <img src={sortIcon} alt="sort icon" height="15" width="15" />
+            <img src={sortBlueIcon} alt="sort icon" height="15" width="15" />
             <b>{sortCriteria.length > 0 ? `${sortCriteria.length} Sort` : 'Sort'}</b>
             {sortCriteria.length > 0 && (
               <span
@@ -427,7 +456,10 @@ const DynamicTable = ({
               </div>
               <div className="sort-popup-body">
                 {tempSortCriteria.length === 0 ? (
-                  <button onClick={addSortCriteria}>Add Sort</button>
+                  <button onClick={addSortCriteria}>
+                    <span><img src={plusIcon} alt='add'/></span>
+                    <span style={{color:'#5856D6'}}>Add Sorter</span>
+                  </button>
                 ) : (
                   tempSortCriteria.map((criterion) => (
                     <div key={criterion.id} className="sort-criterion">
@@ -456,15 +488,20 @@ const DynamicTable = ({
                           <option value="desc">Descending</option>
                         </select>
                       </div>
-                      <button onClick={() => deleteSortCriteria(criterion.id)}>🗑️</button>
+                      <div className='trash'>
+                        <button onClick={() => deleteSortCriteria(criterion.id)}><img src={trashIcon} alt='close'/></button>
+                      </div>
                     </div>
                   ))
                 )}
-                {tempSortCriteria.length > 0 && <button onClick={addSortCriteria}>Add Sort</button>}
+                {tempSortCriteria.length > 0 && <button onClick={addSortCriteria}>
+                  <span><img src={plusIcon} alt='add'/></span>
+                  <span style={{color:'#5856D6'}}>Add Sorter</span>
+                </button>}
               </div>
               <div className="sort-popup-footer">
-                <button onClick={handleSortReset}>Reset Sort</button>
-                <button onClick={handleSortApply}>Apply</button>
+                <button id='resetBtn' onClick={handleSortReset}>Reset Sort</button>
+                <button id='submitBtn' onClick={handleSortApply}>Submit</button>
               </div>
             </div>
           </div>
@@ -478,7 +515,7 @@ const DynamicTable = ({
             <div className="filter-popup">
               <div className="filter-popup-header">
                 <div className="filter-header-start">
-                  <img src={filterIcon} alt="filter icon" width="20" height="20" />
+                  <img src={filterYellowIcon} alt="filter icon" width="20" height="20" />
                   <h2>Filter Data</h2>
                 </div>
                 <img
@@ -492,7 +529,10 @@ const DynamicTable = ({
               </div>
               <div className="filter-popup-body">
                 {tempFilterCriteria.length === 0 ? (
-                  <button onClick={addFilterCriteria}>Add Filter</button>
+                    <button onClick={addFilterCriteria}>
+                      <span><img src={addFilterIcon} alt='add'/></span>
+                      <span style={{color:'#5856D6'}}>Add Filter</span>
+                    </button>
                 ) : (
                   tempFilterCriteria.map((criterion) => {
                     const columnDef = allColumns.find((col) => col.key === criterion.column) || {};
@@ -535,16 +575,21 @@ const DynamicTable = ({
                             onChange={(e) => updateFilterCriterion(criterion.id, 'value', e.target.value)}
                           />
                         </div>
-                        <button onClick={() => deleteFilterCriteria(criterion.id)}>🗑️</button>
+                        <div className='trash'>
+                          <button onClick={() => deleteFilterCriteria(criterion.id)}><img src={trashIcon} alt='close'/></button>
+                        </div>
                       </div>
                     );
                   })
                 )}
-                {tempFilterCriteria.length > 0 && <button onClick={addFilterCriteria}>Add Filter</button>}
+                {tempFilterCriteria.length > 0 && <button onClick={addFilterCriteria}>
+                  <span><img src={addFilterIcon} alt='add'/></span>
+                  <span style={{color:'#5856D6'}}>Add Filter</span>
+                </button>}
               </div>
               <div className="filter-popup-footer">
-                <button onClick={handleFilterReset}>Reset Filter</button>
-                <button onClick={handleFilterApply}>Apply</button>
+                <button id='resetBtn' onClick={handleFilterReset}>Reset Filter</button>
+                <button id='submitBtn' onClick={handleFilterApply}>Apply</button>
               </div>
             </div>
           </div>

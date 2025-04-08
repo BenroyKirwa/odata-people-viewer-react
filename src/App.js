@@ -6,7 +6,7 @@ const App = () => {
   const [peopleData, setPeopleData] = useState([]);
 
   const columns = [
-    { key: 'UserName', label: 'User Name' },
+    { key: 'UserName', label: 'User Name' , isSort: true},
     { key: 'FirstName', label: 'First Name' },
     { key: 'LastName', label: 'Last Name' },
     { key: 'MiddleName', label: 'Middle Name', formatter: (value) => value || 'N/A' },
@@ -102,6 +102,8 @@ const App = () => {
           const [field, relation, value] = f.split(':');
           if (!value) return '';
           if (relation === 'eq') return `${field} eq '${decodeURIComponent(value)}'`;
+          if (relation === 'contains') return `contains(${field}, '${decodeURIComponent(value)}')`;
+          if (relation === 'startswith') return `startswith(${field}, '${decodeURIComponent(value)}')`;
           // Add others as confirmed working
           return '';
         });
